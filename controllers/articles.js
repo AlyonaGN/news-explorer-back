@@ -11,7 +11,6 @@ const createArticle = (req, res, next) => {
   Article.create({
     keyword, title, text, date, source, link, image, owner,
   })
-    .populate('owner')
     .then((newArticle) => {
       res.send(newArticle);
     })
@@ -28,6 +27,7 @@ const createArticle = (req, res, next) => {
 
 const getArticles = (req, res, next) => {
   Article.find({})
+    .populate('owner')
     .then((articles) => {
       res.send(articles);
     })
@@ -39,21 +39,22 @@ const getArticles = (req, res, next) => {
 const deleteArticle = (req, res, next) => {
   const { id } = req.params;
   Article.findById(id)
+    .populate('owner')
     .orFail(new Error('NotFound'))
     .then((article) => {
-      const articleOwner = article.owner.toString();
+      const articleOwner = article.owner._id.toString();
       if (req.user._id !== articleOwner) {
-        throw new ForbiddenError('Невозможно удалить карточку другого пользователя');
+        throw new ForbiddenError('Невозможно удалить статью другого пользователя');
       }
 
       Article.deleteOne({ _id: id })
-        .orFail(new Error('Карточка не найдена'))
+        .orFail(new Error('Статья не найдена'))
         .then((deletedArticle) => res.send(deletedArticle))
         .catch((error) => {
           if (error.name === 'CastError') {
             throw new IncorrectInputError('Переданы некорректные данные');
           } else if (error.message === 'NotFound') {
-            throw new NotFoundError('Не удалось найти и удалить карточку');
+            throw new NotFoundError('Не удалось найти и удалить статью');
           }
           throw error(error.message);
         })
@@ -65,7 +66,7 @@ const deleteArticle = (req, res, next) => {
       if (error.name === 'CastError') {
         throw new IncorrectInputError('Переданы некорректные данные');
       } else if (error.message === 'NotFound') {
-        throw new NotFoundError('Не удалось найти и удалить карточку');
+        throw new NotFoundError('Не удалось найти и удалить статью');
       }
       throw error;
     })

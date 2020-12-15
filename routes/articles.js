@@ -1,16 +1,14 @@
 const router = require('express').Router();
 
-/* const {
-  createCard,
-  getCards,
-  deleteCard,
-  likeCard,
-  removeLikefromCard,
-} = require('../controllers/cards.js'); */
-//const { validateMongooseIdInParams, validateCard } = require('../middlewares/validate.js');
+const {
+  createArticle,
+  getArticles,
+  deleteArticle,
+} = require('../controllers/articles.js');
+const { validateMongooseIdInParams, validateArticle } = require('../middlewares/validate.js');
 
-router.post('/articles', /* validateCard, */ createArticle);
-router.delete('/articles/:id', /* validateMongooseIdInParams, */ deleteArticle);
+router.post('/articles', validateArticle, createArticle);
+router.delete('/articles/:id', validateMongooseIdInParams, deleteArticle);
 router.get('/articles', getArticles);
 
 module.exports = router;
