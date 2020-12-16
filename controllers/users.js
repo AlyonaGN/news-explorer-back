@@ -5,6 +5,7 @@ const NotFoundError = require('../errors/not-found-err');
 const IncorrectInputError = require('../errors/incorrect-input-err');
 const UnauthorizedError = require('../errors/unauthoriszed-err');
 const ConflictError = require('../errors/unauthoriszed-err');
+const { incorrectDataErrMessage, userNotFoundErrMessage, doubleRegistrationErrMessage } = require('../utils/responsesMessages');
 
 const getMyUser = (req, res, next) => {
   const id = req.user._id;
@@ -15,9 +16,9 @@ const getMyUser = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new IncorrectInputError('Переданы некорректные данные');
+        throw new IncorrectInputError(incorrectDataErrMessage);
       } else if (error.message === 'NotFound') {
-        throw new NotFoundError('Объект не найден');
+        throw new NotFoundError(userNotFoundErrMessage);
       }
       throw error;
     })
@@ -34,7 +35,7 @@ const createUser = (req, res, next) => {
   User.findOne({ email: userEmail })
     .then((user) => {
       if (user) {
-        throw new ConflictError('Пользователь с таким email уже зарегистрирован');
+        throw new ConflictError(doubleRegistrationErrMessage);
       }
       bcrypt.hash(password, 10)
         .then((hash) => {
@@ -47,7 +48,7 @@ const createUser = (req, res, next) => {
         })
         .catch((error) => {
           if (error.name === 'ValidationError') {
-            throw new IncorrectInputError('Переданы некорректные данные');
+            throw new IncorrectInputError(incorrectDataErrMessage);
           }
           throw error;
         })
@@ -62,7 +63,7 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, process.env.JWT_TOKEN, { expiresIn: '7d' });
+      const token = jwt.sign({ _id: user._id }, process.env.NODE_ENV === 'production' ? process.env.JWT_TOKEN : 'my-secret-key', { expiresIn: '7d' });
       res.send({ token });
     })
     .catch((err) => {

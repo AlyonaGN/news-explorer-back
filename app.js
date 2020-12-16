@@ -7,39 +7,44 @@ const { PORT = 3000 } = process.env;
 const app = express();
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { validateSignupBody, validateSigninBody } = require('./middlewares/validate.js');
+const { limiter } = require('./utils/rateLimiter');
 
-const userRoutes = require('./routes/users.js');
-const articlesRoutes = require('./routes/articles.js');
+const routes = require('./routes/index.js');
 const {
   login,
   createUser,
 } = require('./controllers/users.js');
 const auth = require('./middlewares/auth.js');
 const NotFoundError = require('./errors/not-found-err');
+const { mongoDBAdress } = require('./utils/DBadresses');
+const { generalNotFoundErr, generalServerErr } = require('./utils/responsesMessages');
 
-mongoose.connect('mongodb://localhost:27017/news-explorer', {
+const mongoUrl = process.env.NODE_ENV === 'production' ? process.env.MONGO_URL : mongoDBAdress;
+mongoose.connect(mongoUrl, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
 
+app.use(helmet());
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(requestLogger);
+app.use(limiter);
 
 app.post('/signin', validateSigninBody, login);
 app.post('/signup', validateSignupBody, createUser);
 
 app.use(auth);
-app.use('/', userRoutes);
-app.use('/', articlesRoutes);
+app.use('/', routes);
 app.use(() => {
-  throw new NotFoundError('Запрашиваемый ресурс не найден');
+  throw new NotFoundError(generalNotFoundErr);
 });
 
 app.use(errorLogger);
@@ -52,7 +57,7 @@ app.use((err, req, res, next) => {
     .status(statusCode)
     .send({
       message: statusCode === 500
-        ? 'На сервере произошла ошибка'
+        ? generalServerErr
         : message,
     });
   next();

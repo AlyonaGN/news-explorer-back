@@ -2,6 +2,12 @@ const Article = require('../models/article');
 const NotFoundError = require('../errors/not-found-err');
 const IncorrectInputError = require('../errors/incorrect-input-err');
 const ForbiddenError = require('../errors/forbidden-err');
+const {
+  incorrectDataErrMessage,
+  notFoundArticleErrMessage,
+  unuathorisedDeletionOfArticleErrMessage,
+  impossibleToFindAndDeleteArticleErrMessage,
+} = require('../utils/responsesMessages');
 
 const createArticle = (req, res, next) => {
   const {
@@ -11,12 +17,14 @@ const createArticle = (req, res, next) => {
   Article.create({
     keyword, title, text, date, source, link, image, owner,
   })
-    .then((newArticle) => {
+    .then((article) => {
+      const newArticle = article.toObject();
+      delete newArticle.owner;
       res.send(newArticle);
     })
     .catch((error) => {
       if (error.name === 'ValidationError') {
-        throw new IncorrectInputError('Переданы некорректные данные');
+        throw new IncorrectInputError(incorrectDataErrMessage);
       }
       throw error;
     })
@@ -27,7 +35,6 @@ const createArticle = (req, res, next) => {
 
 const getArticles = (req, res, next) => {
   Article.find({})
-    .populate('owner')
     .then((articles) => {
       res.send(articles);
     })
@@ -39,22 +46,22 @@ const getArticles = (req, res, next) => {
 const deleteArticle = (req, res, next) => {
   const { id } = req.params;
   Article.findById(id)
+    .orFail(new Error(notFoundArticleErrMessage))
     .populate('owner')
-    .orFail(new Error('NotFound'))
     .then((article) => {
       const articleOwner = article.owner._id.toString();
       if (req.user._id !== articleOwner) {
-        throw new ForbiddenError('Невозможно удалить статью другого пользователя');
+        throw new ForbiddenError(unuathorisedDeletionOfArticleErrMessage);
       }
 
       Article.deleteOne({ _id: id })
-        .orFail(new Error('Статья не найдена'))
+        .orFail(new Error(notFoundArticleErrMessage))
         .then((deletedArticle) => res.send(deletedArticle))
         .catch((error) => {
           if (error.name === 'CastError') {
-            throw new IncorrectInputError('Переданы некорректные данные');
+            throw new IncorrectInputError(incorrectDataErrMessage);
           } else if (error.message === 'NotFound') {
-            throw new NotFoundError('Не удалось найти и удалить статью');
+            throw new NotFoundError(impossibleToFindAndDeleteArticleErrMessage);
           }
           throw error(error.message);
         })
@@ -64,9 +71,9 @@ const deleteArticle = (req, res, next) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        throw new IncorrectInputError('Переданы некорректные данные');
+        throw new IncorrectInputError(incorrectDataErrMessage);
       } else if (error.message === 'NotFound') {
-        throw new NotFoundError('Не удалось найти и удалить статью');
+        throw new NotFoundError(impossibleToFindAndDeleteArticleErrMessage);
       }
       throw error;
     })

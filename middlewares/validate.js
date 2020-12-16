@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongoose').Types;
 const { celebrate, Joi } = require('celebrate');
+const { isURL } = require('validator');
 
 const validateMongooseIdInParams = celebrate({
   params: Joi.object().keys({
@@ -15,19 +16,14 @@ const validateMongooseIdInParams = celebrate({
 const validateSignupBody = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    email: Joi.string().required().custom((value, helpres) => {
-      if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(value)) {
-        return value;
-      }
-      return helpres.message('Невалидный email');
-    }),
+    email: Joi.string().required().email(),
     password: Joi.string().required().trim(),
   }),
 });
 
 const validateSigninBody = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 });
@@ -39,17 +35,17 @@ const validateArticle = celebrate({
     text: Joi.string().required(),
     date: Joi.string().required(),
     source: Joi.string().required(),
-    link: Joi.string().required().custom((value, helpres) => {
-      if (/https?:\/\/(www\.)?([a-zA-Zа-яА-я0-9/_%-])+\.[a-zA-Zа-яА-я0-9/_%-]+#?$/.test(value)) {
-        return value;
+    link: Joi.string().required().custom((value, helpers) => {
+      if (!isURL(value)) {
+        return helpers.message('Некорректная ссылка на статьб');
       }
-      return helpres.message('Невалидная ссылка');
+      return value;
     }),
-    image: Joi.string().required().custom((value, helpres) => {
-      if (/https?:\/\/(www\.)?([a-zA-Zа-яА-я0-9/_%-])+\.[a-zA-Zа-яА-я0-9/_%-]+#?$/.test(value)) {
-        return value;
+    image: Joi.string().required().custom((value, helpers) => {
+      if (!isURL(value)) {
+        return helpers.message('Некорректная ссылка на изображение');
       }
-      return helpres.message('Невалидная ссылка');
+      return value;
     }),
   }),
 });
