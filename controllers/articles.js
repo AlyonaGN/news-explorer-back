@@ -5,7 +5,7 @@ const ForbiddenError = require('../errors/forbidden-err');
 const {
   incorrectDataErrMessage,
   notFoundArticleErrMessage,
-  unuathorisedDeletionOfArticleErrMessage,
+  unauthorisedDeletionOfArticleErrMessage,
   impossibleToFindAndDeleteArticleErrMessage,
 } = require('../utils/responsesMessages');
 
@@ -46,34 +46,21 @@ const getArticles = (req, res, next) => {
 const deleteArticle = (req, res, next) => {
   const { id } = req.params;
   Article.findById(id)
-    .orFail(new Error(notFoundArticleErrMessage))
+    .orFail(new NotFoundError(impossibleToFindAndDeleteArticleErrMessage))
     .populate('owner')
     .then((article) => {
       const articleOwner = article.owner._id.toString();
       if (req.user._id !== articleOwner) {
-        throw new ForbiddenError(unuathorisedDeletionOfArticleErrMessage);
+        throw new ForbiddenError(unauthorisedDeletionOfArticleErrMessage);
       }
 
-      Article.deleteOne({ _id: id })
+      return Article.deleteOne({ _id: id })
         .orFail(new Error(notFoundArticleErrMessage))
-        .then((deletedArticle) => res.send(deletedArticle))
-        .catch((error) => {
-          if (error.name === 'CastError') {
-            throw new IncorrectInputError(incorrectDataErrMessage);
-          } else if (error.message === 'NotFound') {
-            throw new NotFoundError(impossibleToFindAndDeleteArticleErrMessage);
-          }
-          throw error(error.message);
-        })
-        .catch((err) => {
-          next(err);
-        });
+        .then((deletedArticle) => res.send(deletedArticle));
     })
     .catch((error) => {
       if (error.name === 'CastError') {
         throw new IncorrectInputError(incorrectDataErrMessage);
-      } else if (error.message === 'NotFound') {
-        throw new NotFoundError(impossibleToFindAndDeleteArticleErrMessage);
       }
       throw error;
     })

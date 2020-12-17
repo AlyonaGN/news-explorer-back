@@ -10,15 +10,13 @@ const { incorrectDataErrMessage, userNotFoundErrMessage, doubleRegistrationErrMe
 const getMyUser = (req, res, next) => {
   const id = req.user._id;
   User.findById(id)
-    .orFail(new Error('NotFound'))
+    .orFail(new NotFoundError(userNotFoundErrMessage))
     .then((userData) => {
       res.send(userData);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
         throw new IncorrectInputError(incorrectDataErrMessage);
-      } else if (error.message === 'NotFound') {
-        throw new NotFoundError(userNotFoundErrMessage);
       }
       throw error;
     })
@@ -32,7 +30,7 @@ const createUser = (req, res, next) => {
 
   const userEmail = req.body.email;
 
-  User.findOne({ email: userEmail })
+  return User.findOne({ email: userEmail })
     .then((user) => {
       if (user) {
         throw new ConflictError(doubleRegistrationErrMessage);
@@ -45,18 +43,15 @@ const createUser = (req, res, next) => {
             .then(({ email, _id }) => {
               res.send({ email, _id });
             });
-        })
-        .catch((error) => {
-          if (error.name === 'ValidationError') {
-            throw new IncorrectInputError(incorrectDataErrMessage);
-          }
-          throw error;
-        })
-        .catch(next);
+        });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        throw new IncorrectInputError(incorrectDataErrMessage);
+      }
+      throw error;
+    })
+    .catch(next);
 };
 
 const login = (req, res, next) => {
