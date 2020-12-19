@@ -4,7 +4,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const IncorrectInputError = require('../errors/incorrect-input-err');
 const UnauthorizedError = require('../errors/unauthoriszed-err');
-const ConflictError = require('../errors/unauthoriszed-err');
+const ConflictError = require('../errors/conflict-err');
 const { incorrectDataErrMessage, userNotFoundErrMessage, doubleRegistrationErrMessage } = require('../utils/responsesMessages');
 
 const getMyUser = (req, res, next) => {

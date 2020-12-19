@@ -9,18 +9,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { validateSignupBody, validateSigninBody } = require('./middlewares/validate.js');
+
 const { limiter } = require('./utils/rateLimiter');
 
 const routes = require('./routes/index.js');
-const {
-  login,
-  createUser,
-} = require('./controllers/users.js');
-const auth = require('./middlewares/auth.js');
+const errorHandler = require('./middlewares/error-handler');
+
 const NotFoundError = require('./errors/not-found-err');
 const { mongoDBAdress } = require('./utils/DBadresses');
-const { generalNotFoundErr, generalServerErr } = require('./utils/responsesMessages');
+const { generalNotFoundErr } = require('./utils/responsesMessages');
 
 const mongoUrl = process.env.NODE_ENV === 'production' ? process.env.MONGO_URL : mongoDBAdress;
 mongoose.connect(mongoUrl, {
@@ -37,31 +34,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(requestLogger);
 app.use(limiter);
-
-app.post('/signin', validateSigninBody, login);
-app.post('/signup', validateSignupBody, createUser);
-
-app.use(auth);
 app.use('/', routes);
 app.use(() => {
   throw new NotFoundError(generalNotFoundErr);
 });
 
 app.use(errorLogger);
-
 app.use(errors());
-
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === 500
-        ? generalServerErr
-        : message,
-    });
-  next();
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`I am listening to PORT ${PORT}`);

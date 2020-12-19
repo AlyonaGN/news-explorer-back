@@ -6,6 +6,7 @@ const doubleRegistrationErrMessage = 'Пользователь с таким ema
 const userNotFoundErrMessage = 'Пользователь не найден';
 const generalNotFoundErr = 'Запрашиваемый ресурс не найден';
 const generalServerErr = 'На сервере произошла ошибка';
+const unauthorisedActionErrMessage = 'Необходима авторизация';
 
 module.exports = {
   incorrectDataErrMessage,
@@ -16,4 +17,5 @@ module.exports = {
   userNotFoundErrMessage,
   generalNotFoundErr,
   generalServerErr,
+  unauthorisedActionErrMessage,
 };
