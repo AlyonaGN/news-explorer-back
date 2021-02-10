@@ -1,6 +1,23 @@
-# news-explorer-back - Stage 1
-Backend of an app that helps search the news and save them in a convenient form.
-The app is my diploma project at Yandex.Praktikum.
+# News-Explorer - Этап 1
+## Сайт для поиска новостей
 
-At this point of development only api-requests can be sent (please try https://api.news.explorer.by.alyona.students.nomoredomains.icu).
+"News-Explorer" - приложение, позволяющее пользователям искать новости по ключевым словам, используя строку поиска, в то время как поиск осуществляется сразу по большому количеству СМИ с помощью [newsapi](https://newsapi.org/).
 
+**В проекте используется, среди прочего:** 
+
+1. Node.js;
+2. express.js;
+3. celebrate;
+4. централизованная обработка ошибок;
+5. миддлвэры, проводящие валидацию.
+
+
+**Реализован следующий функционал:**
+
+1. авторизация пользователей; 
+2. защита приватных путей на бэкенде;
+3. сохранение и удаление статей.
+ 
+
+В проекте соблюдены правила БЭМ, в том числе, применительно к структуре хранения файлов.
+Настроена сборка с помощью webpack.
