@@ -1,24 +1,31 @@
-# News-Explorer - Этап 1
-## Сайт для поиска новостей
+## News-Explorer - Backend
 
-"News-Explorer" - приложение, позволяющее пользователям искать новости по ключевым словам, используя строку поиска, в то время как поиск осуществляется сразу по нескольким СМИ с помощью [newsapi](https://newsapi.org/).
+A website for searching news  
+"News-Explorer" is an application that allows users to search for news by keywords using a search bar, while the search is performed across multiple media outlets simultaneously through newsapi.
 
-[Здесь](http://api.news.explorer.by.alyona.students.nomoredomains.icu/) можно посмотреть готовое приложение.
+### Technologies Used
 
-**В проекте используются, среди прочего:** 
+The project includes, among other things:
 
-1. Node.js;
-2. express.js;
-3. celebrate;
-4. централизованная обработка ошибок;
-5. миддлвэры, проводящие валидацию.
+- **Node.js**
+- **express.js**
+- **celebrate**
+- Centralized error handling
+- Middleware for validation
 
+### Implemented Functionality
 
-**Реализован следующий функционал:**
+- User authentication
+- Protection of private routes on the backend
+- Saving and deleting articles
 
-1. авторизация пользователей; 
-2. защита приватных путей на бэкенде;
-3. сохранение и удаление статей.
- 
-Приложение разбито на модули.
-В проекте соблюдены правила БЭМ, в том числе, применительно к структуре хранения файлов. 
+The application is modularized. The project adheres to BEM (Block Element Modifier) principles, including file structure organization.
+
+### Project Setup
+
+To run the project locally, you need to:
+1. Download the repository.
+2. Navigate to the root folder of the repository using the terminal.
+3. Install the necessary modules with the command `npm install`.
+4. Start the project with the command `npm start`.
+5. Tests can be run using the command `npm test`.
